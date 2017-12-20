@@ -53,23 +53,19 @@ sub show_settings {
 sub login_form {
     my $app = shift;
 
-    require MT::Author;
+    require MT::Auth;
 
-    my $username = $app->param('username');
-    my $user_class = $app->user_class;
-    my ($author) = $user_class->load(
-        {   name      => $username,
-            type      => MT::Author::AUTHOR(),
-            auth_type => 'MT'
-        },
-        { binary => { name => 1 } }
-    );
+    my $ctx = MT::Auth->fetch_credentials({app => $app})
+        or return $app->json_result({});
 
-    return $app->json_result({}) unless $author;
+    $ctx->{mfa_validate_credentials} = 1;
+
+    my $res = MT::Auth->validate_credentials($ctx) || MT::Auth::UNKNOWN();
+
+    return $app->json_result({}) unless $res == MT::Auth::NEW_LOGIN();
 
     my $param = {
         templates => [],
-        author    => $author,
     };
 
     $app->run_callbacks('mfa_render_form', $app, $param);
@@ -90,8 +86,11 @@ sub init_app {
         install_modifier $auth_module_name, 'around', 'validate_credentials', sub {
             my $orig = shift;
             my $self = shift;
+            my ($ctx) = @_;
 
             my $res = $self->$orig(@_);
+
+            return $res if $ctx->{mfa_validate_credentials};
 
             require MT::Auth;
 
