@@ -18,6 +18,9 @@ Should look like this when installed:
 ## Requirements
 
 * Movable Type 6 or Movable Type 7
+* At least one of the MFA provider plugin.
+    * [MFA-Email](https://github.com/usualoma/mt-plugin-MFA-Email/)
+    * [MFA-GoogleAuth](https://github.com/usualoma/mt-plugin-MFA-GoogleAuth/)
 
 ## LICENSE
 
