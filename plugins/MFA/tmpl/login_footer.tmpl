@@ -1,0 +1,45 @@
+<mt:SetVarBlock name="jq_js_include" append="1">
+jQuery(function($) {
+  var rendered = false;
+
+  function render() {
+    rendered = true;
+
+    $.ajax({
+      type: "POST",
+      url: "<mt:AdminCGIPath /><mt:AdminScript />?__mode=mfa_login_form",
+      data: {
+        username: $("#username").val(),
+      },
+      dataType: "json",
+    }).then(function(data) {
+      var res = data.result;
+
+      if (! res.html) {
+        $("form").get(0).submit();
+      }
+
+      $("#username").prop("readonly", true);
+      $("#password-field").after(res.html);
+    });
+  }
+  if ($("#username").val()) {
+    render();
+  }
+
+  $("form").on("submit", function(ev) {
+    if (rendered) {
+      return;
+    }
+
+    ev.preventDefault();
+
+    render();
+  });
+});
+</mt:SetVarBlock>
+<mt:Unless name="page_content">
+<script type="text/javascript">
+<mt:Var name="jq_js_include" />
+</script>
+</mt:Unless>
