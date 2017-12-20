@@ -5,21 +5,22 @@ jQuery(function($) {
   function render() {
     rendered = true;
 
+    var $form = $("form");
+
     $.ajax({
       type: "POST",
       url: "<mt:AdminCGIPath /><mt:AdminScript />?__mode=mfa_login_form",
-      data: {
-        username: $("#username").val(),
-      },
+      data: $form.serialize(),
       dataType: "json",
     }).then(function(data) {
       var res = data.result;
 
       if (! res.html) {
-        $("form").get(0).submit();
+        $form.get(0).submit();
+        return;
       }
 
-      $("#username").prop("readonly", true);
+      $(":input").prop("readonly", true);
       $("#password-field").after(res.html);
     });
   }
