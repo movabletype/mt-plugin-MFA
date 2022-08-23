@@ -108,6 +108,7 @@ sub init_app {
     foreach my $auth_mode (@auth_modes) {
         my $auth_module_name = 'MT::Auth::' . $auth_mode;
         eval 'require ' . $auth_module_name;
+        next if $@;
 
         install_modifier $auth_module_name, 'around', 'validate_credentials', sub {
             my $orig = shift;
