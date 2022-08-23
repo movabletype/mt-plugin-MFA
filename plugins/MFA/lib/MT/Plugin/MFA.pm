@@ -50,6 +50,8 @@ sub show_settings {
     $tmpl;
 }
 
+our $skip_process_login_result = 0;
+
 sub login_form {
     my $app = shift;
 
@@ -60,7 +62,10 @@ sub login_form {
 
     $ctx->{mfa_validate_credentials} = 1;
 
-    my $res = MT::Auth->validate_credentials($ctx) || MT::Auth::UNKNOWN();
+    my $res = do {
+        local $skip_process_login_result = 1;
+        MT::Auth->validate_credentials($ctx) || MT::Auth::UNKNOWN();
+    };
 
     return $app->json_result({}) unless $res == MT::Auth::NEW_LOGIN();
 
@@ -78,6 +83,14 @@ sub login_form {
 }
 
 sub init_app {
+    require MT::Lockout;
+    install_modifier 'MT::Lockout', 'around', 'process_login_result', sub {
+        my $orig = shift;
+        my $self = shift;
+
+        $self->$orig(@_) unless $skip_process_login_result;
+    };
+
     my @auth_modes = split( /\s+/, MT->config->AuthenticationModule );
     foreach my $auth_mode (@auth_modes) {
         my $auth_module_name = 'MT::Auth::' . $auth_mode;
