@@ -81,10 +81,17 @@ sub login_form {
 
     $app->run_callbacks('mfa_render_form', $app, $param);
 
+    unless (@{$param->{templates}}) {
+        return $app->json_result({});
+    }
+
     return $app->json_result({
-        html => join "\n", map {
-            ref $_ ? MT->build_page_in_mem($_) : $_
-        } @{$param->{templates}},
+        html => join "\n",
+        map({ ref $_ ? MT->build_page_in_mem($_) : $_ } (
+                $app->load_tmpl('login_form_header.tmpl'),
+                @{ $param->{templates} },
+                $app->load_tmpl('login_form_footer.tmpl'),
+        )),
     });
 }
 

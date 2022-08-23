@@ -20,12 +20,18 @@ jQuery(function($) {
         return;
       }
 
-      $(":input").prop("readonly", true);
-      $("#password-field").after(res.html);
+      $("#username-field, #password-field, #remember-me, #remember-me + div").hide();
+
+      var $wrap = $("<div id='mfa-wrap'>");
+      $wrap.html(res.html);
+      $wrap.find("#mfa-cancel").click(function() {
+        // TBD - should we reload the page?
+        $wrap.remove();
+        rendered = false;
+        $("#username-field, #password-field, #remember-me, #remember-me + div").show();
+      });
+      $("#password-field").after($wrap);
     });
-  }
-  if ($("#username").val()) {
-    render();
   }
 
   $("form").on("submit", function(ev) {
