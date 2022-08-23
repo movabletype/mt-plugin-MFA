@@ -56,6 +56,7 @@ sub login_form {
     my $app = shift;
 
     require MT::Auth;
+    require MT::Author;
 
     my $ctx = MT::Auth->fetch_credentials({app => $app})
         or return $app->json_result({});
@@ -67,7 +68,12 @@ sub login_form {
         MT::Auth->validate_credentials($ctx) || MT::Auth::UNKNOWN();
     };
 
-    return $app->json_result({}) unless $res == MT::Auth::NEW_LOGIN();
+    unless ($app->user) {
+        my $user = $app->user_class->load(
+            { name   => $ctx->{username}, type => MT::Author->AUTHOR },
+            { binary => { name => 1 } });
+        $app->user($user);
+    }
 
     my $param = {
         templates => [],
