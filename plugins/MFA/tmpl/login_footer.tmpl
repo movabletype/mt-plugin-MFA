@@ -9,7 +9,7 @@ jQuery(function($) {
 
     $.ajax({
       type: "POST",
-      url: "<mt:AdminCGIPath /><mt:AdminScript />?__mode=mfa_login_form",
+      url: "<mt:var name="mt_url" />?__mode=mfa_login_form",
       data: $form.serialize(),
       dataType: "json",
     }).then(function(data) {
