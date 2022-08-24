@@ -68,11 +68,16 @@ sub login_form {
         MT::Auth->validate_credentials($ctx) || MT::Auth::UNKNOWN();
     };
 
-    unless ($app->user) {
-        my $user = $app->user_class->load(
-            { name   => $ctx->{username}, type => MT::Author->AUTHOR },
-            { binary => { name => 1 } });
-        $app->user($user);
+    if (MT->config->MFAShowFormOnlyToAuthenticatedUser) {
+        return $app->json_result({}) unless $res == MT::Auth::NEW_LOGIN();
+    }
+    else {
+        unless ($app->user) {
+            my $user = $app->user_class->load(
+                { name   => $ctx->{username}, type => MT::Author->AUTHOR },
+                { binary => { name => 1 } });
+            $app->user($user);
+        }
     }
 
     my $param = {

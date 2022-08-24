@@ -7,6 +7,10 @@ author_name: Taku AMANO
 author_link: http://blog.taaas.jp/
 plugin_link: http://blog.taaas.jp/mt/mfa/
 
+config_settings:
+  MFAShowFormOnlyToAuthenticatedUser:
+    default: 1
+
 l10n_lexicon:
   ja:
     This plugin provides multi factor authentication featrue for the Movable Type.: "多要素認証の機能を有効にします"
