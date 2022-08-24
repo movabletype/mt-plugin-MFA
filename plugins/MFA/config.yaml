@@ -1,6 +1,6 @@
 id: MFA
 name: MFA
-version: 0.9.1
+version: 0.9.2
 
 description: <__trans phrase="This plugin provides multi factor authentication featrue for the Movable Type.">
 author_name: Taku AMANO
