@@ -10,7 +10,7 @@ jQuery(function($) {
     $.ajax({
       type: "POST",
       url: "<mt:var name="mt_url" />?__mode=mfa_login_form",
-      data: $form.serialize(),
+      data: $form.find("input[name!=__mode]").serialize(),
       dataType: "json",
     }).then(function(data) {
       var res = data.result;
