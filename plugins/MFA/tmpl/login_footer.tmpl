@@ -15,6 +15,18 @@ jQuery(function($) {
     }).then(function(data) {
       var res = data.result;
 
+      if (res.error) {
+        $('.alert').remove();
+        $form.get(0).reset();
+
+        var $error = $('<div class="row"><div class="col-12"><div class="alert alert-danger" role="alert"></div></div></div>');
+        $error.find('.alert').text(res.error);
+        $('#msg-block').after($error);
+
+        rendered = false;
+        return;
+      }
+
       if (! res.html) {
         $form.get(0).submit();
         return;

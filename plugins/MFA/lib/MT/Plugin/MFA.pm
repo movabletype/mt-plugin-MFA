@@ -58,8 +58,15 @@ sub login_form {
     require MT::Auth;
     require MT::Author;
 
+    my $return_with_invalid_login = sub {
+        $app->login(); # call MT::App::login to record log and failed login
+        $app->json_result({
+            error => $app->translate('Invalid login.'),
+        });
+    };
+
     my $ctx = MT::Auth->fetch_credentials({app => $app})
-        or return $app->json_result({});
+        or return $return_with_invalid_login->();
 
     $ctx->{mfa_validate_credentials} = 1;
 
@@ -69,7 +76,7 @@ sub login_form {
     };
 
     if (MT->config->MFAShowFormOnlyToAuthenticatedUser) {
-        return $app->json_result({}) unless $res == MT::Auth::NEW_LOGIN();
+        return $return_with_invalid_login->() unless $res == MT::Auth::NEW_LOGIN();
     }
     else {
         unless ($app->user) {
