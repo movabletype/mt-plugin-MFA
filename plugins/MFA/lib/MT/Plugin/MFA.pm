@@ -58,7 +58,7 @@ sub login_form {
     my $ctx = MT::Auth->fetch_credentials({app => $app})
         or return $return_with_invalid_login->();
 
-    $ctx->{mfa_validate_credentials} = 1;
+    $ctx->{mfa_pre_check_credentials} = 1;
 
     my $res = do {
         local $skip_process_login_result = 1;
@@ -119,7 +119,7 @@ sub init_app {
 
             my $res = $self->$orig(@_);
 
-            return $res if $ctx->{mfa_validate_credentials};
+            return $res if $ctx->{mfa_pre_check_credentials};
 
             require MT::Auth;
 
