@@ -32,22 +32,12 @@ sub template_param_author_list_header {
     insert_after_by_name($tmpl, 'system_msg', 'author_list_header.tmpl');
 }
 
-sub show_settings {
-    my $app = shift;
+sub template_param_edit_author {
+    my ($cb, $app, $param, $tmpl) = @_;
 
-    my $param = {
-        templates => [],
-    };
-
-    $app->run_callbacks('mfa_show_settings', $app, $param);
-
-    my $tmpl = plugin()->load_tmpl('settings.tmpl');
-    $tmpl->param({page_content => join "\n", map {
-            ref $_ ? MT->build_page_in_mem($_) : $_
-        } @{$param->{templates}},
-    });
-
-    $tmpl;
+    $param->{mfa_page_actions} = [];
+    $app->run_callbacks('mfa_page_actions', $app, $param->{mfa_page_actions});
+    insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
 }
 
 our $skip_process_login_result = 0;

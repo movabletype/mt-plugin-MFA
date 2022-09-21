@@ -1,0 +1,20 @@
+<mt:setvarblock name="related_content" append="1">
+<mt:unless name="new_object">
+
+<mtapp:widget
+  id="mfa_settings"
+  label="<__trans_section component="MFA"><__trans phrase="MFA"></__trans_section>">
+  <ul class="list-unstyled">
+    <mt:loop name="mfa_page_actions">
+      <li class="icon-left-xwide icon-plugin-action">
+        <a href="<mt:var name="script_url" escape="html">?__mode=<mt:var name="mode">&id=<mt:var name="id">" class="mt-open-dialog mt-modal-open d-inline-block" data-mt-modal-large>
+          <mtapp:svgicon id="ic_setting" size="sm" title="$label">
+          <mt:var name="label">
+        </a>
+      </li>
+    </mt:loop>
+  </ul>
+</mtapp:widget>
+
+</mt:unless>
+</mt:setvarblock>
