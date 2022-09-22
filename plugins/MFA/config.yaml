@@ -35,8 +35,6 @@ applications:
       author:
         mfa_reset:
           label: "Reset MFA settings"
-          code:  $MFA::MT::Plugin::MFA::reset
           mode:  mfa_reset
           order: 5000
-          button: 1,
           condition: "sub { MT->app->user->is_superuser }"
