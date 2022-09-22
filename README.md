@@ -14,6 +14,8 @@ Should look like this when installed:
     $MT_HOME/
         plugins/
             MFA/
+        tools/
+            MFA/
 
 ## Requirements
 
