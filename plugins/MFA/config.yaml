@@ -39,4 +39,4 @@ applications:
           mode:  mfa_reset
           order: 5000
           button: 1,
-          condition: "sub { MT->app->can_do('access_to_system_author_list'); }"
+          condition: "sub { MT->app->user->is_superuser }"
