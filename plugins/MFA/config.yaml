@@ -2,7 +2,7 @@ id: MFA
 name: MFA
 version: 0.10.3
 
-description: <__trans phrase="This plugin provides multi factor authentication featrue for the Movable Type.">
+description: <__trans phrase="This plugin provides multi factor authentication feature for the Movable Type.">
 author_link: http://www.movabletype.org/
 author_name: Six Apart Ltd.
 
@@ -12,7 +12,7 @@ config_settings:
 
 l10n_lexicon:
   ja:
-    This plugin provides multi factor authentication featrue for the Movable Type.: "多要素認証の機能を有効にします"
+    This plugin provides multi factor authentication feature for the Movable Type.: "多要素認証の機能を有効にします"
     MFA: "多要素認証"
     MFA Settings: "多要素認証の設定"
     Reset MFA settings: "多要素認証のリセット"

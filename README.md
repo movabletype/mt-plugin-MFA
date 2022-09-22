@@ -1,7 +1,7 @@
 # MFA
 
 This is a plugin for the Movable Type.
-This plugin provides multi factor authentication featrue for the Movable Type.
+This plugin provides multi factor authentication feature for the Movable Type.
 
 ## Installation
 
