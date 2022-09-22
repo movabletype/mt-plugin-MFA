@@ -4,7 +4,9 @@ use strict;
 use warnings;
 use Getopt::Long;
 use FindBin;
-use lib ("$FindBin::Bin/../../lib", "$FindBin::Bin/../../extlib");
+use lib $ENV{MT_HOME}
+    ? ("$ENV{MT_HOME}/lib", "$ENV{MT_HOME}/lib")
+    : ("$FindBin::Bin/../../lib", "$FindBin::Bin/../../extlib");
 use MT::Bootstrap;
 use MT;
 
@@ -16,21 +18,21 @@ GetOptions(
     'all'        => \my $all,
 );
 
-if ( grep({ $_ } ($username, $email, $all)) != 1 ) {
-    die <<USAGE
+if (grep({ $_ } ($username, $email, $all)) != 1) {
+    die <<USAGE;
 Usage: $0 --username=[username] --email=[email] --all
 Specify only one of --username, --email, --all.
 USAGE
 }
 
 my $iter = $mt->model('author')->load_iter({
-    ($username ? (name => $username) : ()),
-    ($email ? (email => $email) : ()),
+    ($username ? (name  => $username) : ()),
+    ($email    ? (email => $email)    : ()),
 });
 my $count = 0;
 
 while (my $user = $iter->()) {
-    $mt->run_callbacks('mfa_reset_settings', $mt, {user => $user});
+    $mt->run_callbacks('mfa_reset_settings', $mt, { user => $user });
     $count++;
 }
 
