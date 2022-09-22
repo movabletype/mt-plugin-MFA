@@ -3,9 +3,8 @@ name: MFA
 version: 0.9.2
 
 description: <__trans phrase="This plugin provides multi factor authentication featrue for the Movable Type.">
-author_name: Taku AMANO
-author_link: http://blog.taaas.jp/
-plugin_link: http://blog.taaas.jp/mt/mfa/
+author_link: http://www.movabletype.org/
+author_name: Six Apart Ltd.
 
 config_settings:
   MFAShowFormOnlyToAuthenticatedUser:
