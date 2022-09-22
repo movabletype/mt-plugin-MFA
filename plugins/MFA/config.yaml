@@ -30,7 +30,6 @@ applications:
       mfa_login_form:
         handler: $MFA::MT::Plugin::MFA::login_form
         requires_login: 0
-      mfa_settings: $MFA::MT::Plugin::MFA::show_settings
       mfa_reset: $MFA::MT::Plugin::MFA::reset_settings
     list_actions:
       author:
