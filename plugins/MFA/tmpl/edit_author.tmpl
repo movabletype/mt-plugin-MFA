@@ -1,6 +1,7 @@
 <mt:setvarblock name="related_content" append="1">
 <mt:unless name="new_object">
 
+<mt:if name="mfa_page_actions">
 <mtapp:widget
   id="mfa_settings"
   label="<__trans_section component="MFA"><__trans phrase="MFA"></__trans_section>">
@@ -15,6 +16,7 @@
     </mt:loop>
   </ul>
 </mtapp:widget>
+</mt:if>
 
 </mt:unless>
 </mt:setvarblock>
