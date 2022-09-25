@@ -26,8 +26,8 @@ USAGE
 }
 
 my $iter = $mt->model('author')->load_iter({
-    ($username ? (name  => $username) : ()),
-    ($email    ? (email => $email)    : ()),
+    (defined($username) ? (name  => $username) : ()),
+    (defined($email)    ? (email => $email)    : ()),
 });
 my $count = 0;
 
