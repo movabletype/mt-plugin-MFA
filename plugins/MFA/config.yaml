@@ -29,6 +29,7 @@ applications:
     methods:
       mfa_login_form:
         handler: $MFA::MT::Plugin::MFA::login_form
+        app_mode: JSON
         requires_login: 0
       mfa_reset: $MFA::MT::Plugin::MFA::reset_settings
     list_actions:
