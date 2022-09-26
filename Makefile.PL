@@ -12,6 +12,16 @@ WriteMakefile(
 
 sub MY::top_targets {
     << 'Makefile';
+npm-install:
+	npm ci
+
+npm-build:
+	npm run build
+
+build-js: npm-install npm-build
+build: build-js
+manifest : build
+
 create_distdir :
 	$(RM_RF) $(DISTVNAME)
 	$(PERLRUN) "-MExtUtils::Manifest=manicopy,maniread" \

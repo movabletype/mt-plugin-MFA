@@ -10,3 +10,5 @@ MYMETA.*
 blib
 pm_to_blib
 node_modules/
+
+mt-static/plugins/MFA/dist/
