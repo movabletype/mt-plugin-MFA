@@ -14,6 +14,9 @@ Should look like this when installed:
     $MT_HOME/
         plugins/
             MFA/
+        mt-static/
+            plugins/
+                MFA/
         tools/
             MFA/
 
