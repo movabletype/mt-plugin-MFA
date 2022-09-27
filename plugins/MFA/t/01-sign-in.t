@@ -42,31 +42,33 @@ sub insert_failedlogin {
     $failedlogin->save or die $failedlogin->errstr;
 }
 
-subtest 'Should not affect to "sign in" function for users who have not configured MFA' => sub {
-    subtest 'valid password' => sub {
-        $app->post_ok({
-            username => $user->name,
-            password => $password,
-        });
-        $app->content_like(qr/Dashboard/);
-    };
+subtest 'sign in' => sub {
+    subtest 'Should not affect to "sign in" function for users who have not configured MFA' => sub {
+        subtest 'valid password' => sub {
+            $app->post_ok({
+                username => $user->name,
+                password => $password,
+            });
+            $app->content_like(qr/Dashboard/);
+        };
 
-    subtest 'invalid password' => sub {
-        MT->model('failedlogin')->remove({ author_id => $user->id });
-        $app->post_ok({
-            username => $user->name,
-            password => 'Invalid - ' . $password,
-        });
-        $app->content_unlike(qr/Dashboard/);
-        is(MT->model('failedlogin')->count({ author_id => $user->id }), 1);
-    };
+        subtest 'invalid password' => sub {
+            MT->model('failedlogin')->remove({ author_id => $user->id });
+            $app->post_ok({
+                username => $user->name,
+                password => 'Invalid - ' . $password,
+            });
+            $app->content_unlike(qr/Dashboard/);
+            is(MT->model('failedlogin')->count({ author_id => $user->id }), 1);
+        };
 
-    subtest 'locked out' => sub {
-        $app->post_ok({
-            username => $locked_out_user->name,
-            password => $password,
-        });
-        $app->content_unlike(qr/Dashboard/);
+        subtest 'locked out' => sub {
+            $app->post_ok({
+                username => $locked_out_user->name,
+                password => $password,
+            });
+            $app->content_unlike(qr/Dashboard/);
+        };
     };
 };
 
