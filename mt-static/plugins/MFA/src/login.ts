@@ -16,13 +16,7 @@ function renderMFAForm() {
     data,
     dataType: "json",
   }).then(
-    ({
-      error,
-      result: { html },
-    }: {
-      error?: string;
-      result: { html?: string };
-    }) => {
+    ({ error, result }: { error?: string; result?: { html?: string } }) => {
       if (error) {
         document.querySelectorAll(".alert").forEach((el) => el.remove());
         form.reset();
@@ -42,7 +36,10 @@ function renderMFAForm() {
         return;
       }
 
+      const html = result?.html;
+
       if (!html) {
+        // has not configured MFA.
         form.submit();
         return;
       }
