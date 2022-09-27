@@ -58,9 +58,6 @@ workflows:
   test-and-build:
     jobs:
       - test-perl:
-          name: test-perl with centos6
-          docker-image: movabletype/test:centos6
-      - test-perl:
           name: test-perl with jessie
           docker-image: movabletype/test:jessie
       - test-perl:
