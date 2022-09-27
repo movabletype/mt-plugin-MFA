@@ -142,14 +142,15 @@ sub reset_settings {
     $app->setup_filtered_ids
         if $app->param('all_selected');
 
+    my $status = 1;
     for my $id ($app->can('multi_param') ? $app->multi_param('id') : $app->param('id')) {
         next unless $id;
         my $user = $class->load($id);
         next unless $user;
-        $app->run_callbacks('mfa_reset_settings', $app, { user => $user });
+        $status &&= $app->run_callbacks('mfa_reset_settings', $app, { user => $user });
     }
 
-    $app->add_return_arg(saved_status  => 'mfa_reset');
+    $app->add_return_arg(saved_status  => $status ? 'mfa_reset' : 'mfa_reset_failed');
     $app->add_return_arg(is_power_edit => 1)
         if $app->param('is_power_edit');
 
