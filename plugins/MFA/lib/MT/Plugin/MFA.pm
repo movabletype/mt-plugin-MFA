@@ -40,8 +40,6 @@ sub template_param_edit_author {
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
 }
 
-our $skip_process_login_result = 0;
-
 sub login_form {
     my $app = shift;
 
@@ -58,10 +56,15 @@ sub login_form {
 
     $ctx->{mfa_pre_check_credentials} = 1;
 
-    my $res = do {
-        local $skip_process_login_result = 1;
-        MT::Auth->validate_credentials($ctx) || MT::Auth::UNKNOWN();
-    };
+    # FIXME: Calling an internal method directly.
+    # This works correctly in MT7, but will likely not work in MT8 or later versions, so it needs to be fixed soon.
+    my $res = MT::Auth::_handle('validate_credentials', $ctx) || MT::Auth::UNKNOWN();
+    if ($res != MT::Auth::SUCCESS()) {
+        require MT::Lockout;
+        if (MT::Lockout->is_locked_out($app, $app->remote_ip, $ctx->{username})) {
+            $res = MT::Auth::LOCKED_OUT();
+        }
+    }
 
     if (MT->config->MFAShowFormOnlyToAuthenticatedUser) {
         return $return_with_invalid_login->() unless $res == MT::Auth::NEW_LOGIN();
@@ -99,14 +102,6 @@ sub init_app {
     return if $app_initialized;
     $app_initialized = 1;
 
-    require MT::Lockout;
-    install_modifier 'MT::Lockout', 'around', 'process_login_result', sub {
-        my $orig = shift;
-        my $self = shift;
-
-        $self->$orig(@_) unless $skip_process_login_result;
-    };
-
     my @auth_modes = split(/\s+/, MT->config->AuthenticationModule);
     foreach my $auth_mode (@auth_modes) {
         my $auth_module_name = 'MT::Auth::' . $auth_mode;
@@ -121,9 +116,6 @@ sub init_app {
             my $res = $self->$orig(@_);
 
             return $res if $ctx->{mfa_pre_check_credentials};
-
-            require MT::Auth;
-
             return $res unless $res == MT::Auth::NEW_LOGIN();
 
             return MT->app->run_callbacks('mfa_verify_token')
