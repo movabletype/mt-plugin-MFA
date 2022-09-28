@@ -32,8 +32,11 @@ my $iter = $mt->model('author')->load_iter({
 my $count = 0;
 
 while (my $user = $iter->()) {
-    $mt->run_callbacks('mfa_reset_settings', $mt, { user => $user });
-    $count++;
+    if ($mt->run_callbacks('mfa_reset_settings', $mt, { user => $user })) {
+        $count++;
+    } else {
+        warn "Failed to reset settings for user " . $user->name . "(" . $user->email . ") : " . $mt->errstr;
+    }
 }
 
 print "Reset settings for $count users.\n";
