@@ -7,12 +7,46 @@ use lib "$FindBin::Bin/../../../t/lib";
 use Test::More;
 use MT::Test::Env;
 
+our $mfa_valid_token;
+our $mfa_invalid_token;
 our $test_env;
 BEGIN {
+    $mfa_valid_token = '123456';
+    $mfa_invalid_token = '000000';
+
     $test_env = MT::Test::Env->new(
-        DefaultLanguage => 'en_US',    ## for now
+        PluginPath => ['TEST_ROOT/plugins'],
     );
     $ENV{MT_CONFIG} = $test_env->config_file;
+
+    $test_env->save_file( 'plugins/MFA-Test/config.yaml', <<YAML );
+name: MFA-Test
+key: MFA-Test
+id: MFA-Test
+
+schema_version: 0.01
+object_types:
+  author:
+    mfa_test_enabled: boolean meta
+
+callbacks:
+  mfa_render_form: |
+    sub {
+        my (\$cb, \$app, \$param) = \@_;
+
+        my \$tmpl = MT->model('template')->new;
+        \$tmpl->text('MFA-Test');
+        push \@{ \$param->{templates} }, \$tmpl;
+        
+        return 1;
+    }
+  mfa_verify_token: |
+    sub {
+        my \$app  = MT->app;
+        my \$user = \$app->user;
+        !\$user->mfa_test_enabled || (\$app->param('mfa_test_token') // '') eq '$mfa_valid_token';
+    }
+YAML
 }
 
 use MT::Test;
@@ -30,6 +64,17 @@ my $locked_out_user = MT::Test::Permission->make_author;
 $locked_out_user->set_password($password);
 $locked_out_user->locked_out_time(time);
 $locked_out_user->save or die $user->errstr;
+
+my $mfa_user = MT::Test::Permission->make_author;
+$mfa_user->set_password($password);
+$mfa_user->mfa_test_enabled(1);
+$mfa_user->save or die $user->errstr;
+
+my $mfa_locked_out_user = MT::Test::Permission->make_author;
+$mfa_locked_out_user->set_password($password);
+$mfa_locked_out_user->mfa_test_enabled(1);
+$mfa_locked_out_user->locked_out_time(time);
+$mfa_locked_out_user->save or die $user->errstr;
 
 my $app = MT::Test::App->new('MT::App::CMS');
 
@@ -70,6 +115,84 @@ subtest 'sign in' => sub {
             $app->content_unlike(qr/Dashboard/);
         };
     };
+
+    subtest 'have configured MFA', sub {
+        subtest 'valid password without security token' => sub {
+            MT->model('failedlogin')->remove({ author_id => $mfa_user->id });
+            $app->post_ok({
+                username => $mfa_user->name,
+                password => $password,
+            });
+            $app->content_unlike(qr/Dashboard/);
+            is(MT->model('failedlogin')->count({ author_id => $mfa_user->id }), 1);
+        };
+
+        subtest 'invalid password without security token' => sub {
+            MT->model('failedlogin')->remove({ author_id => $mfa_user->id });
+            $app->post_ok({
+                username => $mfa_user->name,
+                password => 'Invalid - ' . $password,
+            });
+            $app->content_unlike(qr/Dashboard/);
+            is(MT->model('failedlogin')->count({ author_id => $mfa_user->id }), 1);
+        };
+
+        subtest 'valid password with valid security token' => sub {
+            insert_failedlogin($mfa_user);
+
+            $app->post_ok({
+                username       => $mfa_user->name,
+                password       => $password,
+                mfa_test_token => $mfa_valid_token,
+            });
+            $app->content_like(qr/Dashboard/);
+            is(MT->model('failedlogin')->count({ author_id => $mfa_user->id }), 0);
+        };
+
+        subtest 'invalid password with valid security token' => sub {
+            MT->model('failedlogin')->remove({ author_id => $mfa_user->id });
+
+            $app->post_ok({
+                username       => $mfa_user->name,
+                password       => 'Invalid - ' . $password,
+                mfa_test_token => $mfa_valid_token,
+            });
+            $app->content_unlike(qr/Dashboard/);
+            is(MT->model('failedlogin')->count({ author_id => $mfa_user->id }), 1);
+        };
+
+        subtest 'valid password with invalid security token' => sub {
+            MT->model('failedlogin')->remove({ author_id => $mfa_user->id });
+
+            $app->post_ok({
+                username       => $mfa_user->name,
+                password       => $password,
+                mfa_test_token => $mfa_invalid_token,
+            });
+            $app->content_unlike(qr/Dashboard/);
+            is(MT->model('failedlogin')->count({ author_id => $mfa_user->id }), 1);
+        };
+
+        subtest 'invalid password with invalid security token' => sub {
+            MT->model('failedlogin')->remove({ author_id => $mfa_user->id });
+
+            $app->post_ok({
+                username       => $mfa_user->name,
+                password       => 'Invalid - ' . $password,
+                mfa_test_token => $mfa_invalid_token,
+            });
+            $app->content_unlike(qr/Dashboard/);
+            is(MT->model('failedlogin')->count({ author_id => $mfa_user->id }), 1);
+        };
+
+        subtest 'locked out' => sub {
+            $app->post_ok({
+                username => $mfa_locked_out_user->name,
+                password => $password,
+            });
+            $app->content_unlike(qr/Dashboard/);
+        };
+    };
 };
 
 subtest '__mode=mfa_login_form' => sub {
@@ -83,11 +206,12 @@ subtest '__mode=mfa_login_form' => sub {
             username => $user->name,
             password => $password,
         });
-        is_deeply($app->json, { "error" => undef, "result" => {} });
+        ok !$app->json->{error};
+        like $app->json->{result}{html}, qr/MFA-Test/;
         is(MT->model('failedlogin')->count({ author_id => $user->id }), 1, 'Should not remove the failedlogin with this request.');
     };
 
-    subtest 'valid password' => sub {
+    subtest 'invalid password' => sub {
         MT->model('failedlogin')->remove({ author_id => $user->id });
 
         local $ENV{HTTP_X_REQUESTED_WITH} = 'XMLHttpRequest';
