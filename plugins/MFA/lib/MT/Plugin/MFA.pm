@@ -94,7 +94,11 @@ sub login_form {
     });
 }
 
+my $app_initialized = 0;
 sub init_app {
+    return if $app_initialized;
+    $app_initialized = 1;
+
     require MT::Lockout;
     install_modifier 'MT::Lockout', 'around', 'process_login_result', sub {
         my $orig = shift;
