@@ -54,7 +54,7 @@ function renderMFAForm() {
 
       const wrap = document.createElement("div");
       wrap.innerHTML = html;
-      wrap.querySelector("mfa-cancel")?.addEventListener("click", () => {
+      wrap.querySelector("#mfa-cancel")?.addEventListener("click", () => {
         wrap.remove();
         rendered = false;
         document
