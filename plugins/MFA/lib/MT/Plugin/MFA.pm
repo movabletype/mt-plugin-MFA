@@ -40,6 +40,8 @@ sub template_param_edit_author {
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
 }
 
+our $skip_process_login_result = 0;
+
 sub login_form {
     my $app = shift;
 
@@ -54,17 +56,7 @@ sub login_form {
     my $ctx = MT::Auth->fetch_credentials({ app => $app })
         or return $return_with_invalid_login->();
 
-    $ctx->{mfa_pre_check_credentials} = 1;
-
-    # FIXME: Calling an internal method directly.
-    # This works correctly in MT7, but will likely not work in MT8 or later versions, so it needs to be fixed soon.
-    my $res = MT::Auth::_handle('validate_credentials', $ctx) || MT::Auth::UNKNOWN();
-    if ($res != MT::Auth::SUCCESS()) {
-        require MT::Lockout;
-        if (MT::Lockout->is_locked_out($app, $app->remote_ip, $ctx->{username})) {
-            $res = MT::Auth::LOCKED_OUT();
-        }
-    }
+    my $res = MT::Auth->validate_credentials($ctx, { skip_callbacks => 1 }) || MT::Auth::UNKNOWN();
 
     if (MT->config->MFAShowFormOnlyToAuthenticatedUser) {
         return $return_with_invalid_login->() unless $res == MT::Auth::NEW_LOGIN();
@@ -97,32 +89,13 @@ sub login_form {
     });
 }
 
-my $app_initialized = 0;
-sub init_app {
-    return if $app_initialized;
-    $app_initialized = 1;
+sub validate_credentials {
+    my ($cb, $app, $param) = @_;
 
-    my @auth_modes = split(/\s+/, MT->config->AuthenticationModule);
-    foreach my $auth_mode (@auth_modes) {
-        my $auth_module_name = 'MT::Auth::' . $auth_mode;
-        eval 'require ' . $auth_module_name;
-        next if $@;
+    $param->{result} = MT::Auth::INVALID_PASSWORD()
+        if ($param->{result} == MT::Auth::NEW_LOGIN() && !MT->app->run_callbacks('mfa_verify_token'));
 
-        install_modifier $auth_module_name, 'around', 'validate_credentials', sub {
-            my $orig  = shift;
-            my $self  = shift;
-            my ($ctx) = @_;
-
-            my $res = $self->$orig(@_);
-
-            return $res if $ctx->{mfa_pre_check_credentials};
-            return $res unless $res == MT::Auth::NEW_LOGIN();
-
-            return MT->app->run_callbacks('mfa_verify_token')
-                ? $res
-                : MT::Auth::INVALID_PASSWORD();
-        };
-    }
+    1;
 }
 
 sub reset_settings {
