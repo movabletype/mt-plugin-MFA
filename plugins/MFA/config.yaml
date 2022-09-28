@@ -6,10 +6,6 @@ description: <__trans phrase="This plugin provides multi factor authentication f
 author_link: http://www.movabletype.org/
 author_name: Six Apart Ltd.
 
-config_settings:
-  MFAShowFormOnlyToAuthenticatedUser:
-    default: 1
-
 l10n_lexicon:
   ja:
     This plugin provides multi factor authentication feature for the Movable Type.: "多要素認証の機能を有効にします"

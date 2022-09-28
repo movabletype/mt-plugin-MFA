@@ -66,16 +66,8 @@ sub login_form {
         }
     }
 
-    if (MT->config->MFAShowFormOnlyToAuthenticatedUser) {
-        return $return_with_invalid_login->() unless $res == MT::Auth::NEW_LOGIN();
-    } else {
-        unless ($app->user) {
-            my $user = $app->user_class->load(
-                { name   => $ctx->{username}, type => MT::Author->AUTHOR },
-                { binary => { name => 1 } });
-            $app->user($user);
-        }
-    }
+    return $return_with_invalid_login->()
+        unless $res == MT::Auth::NEW_LOGIN();
 
     my $param = {
         templates => [],
