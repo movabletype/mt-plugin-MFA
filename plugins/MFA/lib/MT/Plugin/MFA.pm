@@ -40,6 +40,7 @@ sub template_param_edit_author {
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
 }
 
+our $pre_check_credentials = 0;
 sub login_form {
     my $app = shift;
 
@@ -54,11 +55,12 @@ sub login_form {
     my $ctx = MT::Auth->fetch_credentials({ app => $app })
         or return $return_with_invalid_login->();
 
-    $ctx->{mfa_pre_check_credentials} = 1;
-
-    # FIXME: Calling an internal method directly.
+    # FIXME: Calling an internal method.
     # This works correctly in MT7, but will likely not work in MT8 or later versions, so it needs to be fixed soon.
-    my $res = MT::Auth::_handle('validate_credentials', $ctx) || MT::Auth::UNKNOWN();
+    my $res = do {
+        local $pre_check_credentials = 1;
+        MT::Auth::_handle('validate_credentials', $ctx) || MT::Auth::UNKNOWN();
+    };
     if ($res != MT::Auth::SUCCESS()) {
         require MT::Lockout;
         if (MT::Lockout->is_locked_out($app, $app->remote_ip, $ctx->{username})) {
@@ -107,7 +109,7 @@ sub init_app {
 
             my $res = $self->$orig(@_);
 
-            return $res if $ctx->{mfa_pre_check_credentials};
+            return $res if $pre_check_credentials;
             return $res unless $res == MT::Auth::NEW_LOGIN();
 
             return MT->app->run_callbacks('mfa_verify_token')
