@@ -46,10 +46,12 @@ function renderMFAForm() {
 
       rendered = true;
 
+      const fieldSelector = [
+        "#username-field, #password-field, #remember-me, #remember-me + div", // login
+        "#page-title, #name-field, #name-field + div", // new_password
+      ].join(",");
       document
-        .querySelectorAll(
-          "#username-field, #password-field, #remember-me, #remember-me + div"
-        )
+        .querySelectorAll(fieldSelector)
         .forEach((el) => el.classList.add("d-none"));
 
       const wrap = document.createElement("div");
@@ -58,12 +60,15 @@ function renderMFAForm() {
         wrap.remove();
         rendered = false;
         document
-          .querySelectorAll(
-            "#username-field, #password-field, #remember-me, #remember-me + div"
-          )
+          .querySelectorAll(fieldSelector)
           .forEach((el) => el.classList.remove("d-none"));
       });
-      const placeholder = document.querySelector("#password-field");
+      const placeholder = document.querySelector(
+        [
+          "#password-field", // login
+          "#name-field", // new_password
+        ].join(",")
+      );
       placeholder?.parentElement?.insertBefore(wrap, placeholder.nextSibling);
     }
   );
