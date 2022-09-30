@@ -106,17 +106,44 @@ sub init_app {
             my $orig  = shift;
             my $self  = shift;
             my ($ctx) = @_;
+            my $app   = MT->app;
 
             my $res = $self->$orig(@_);
+
+            return $res unless $app && $app->isa('MT::App::CMS');
 
             return $res if $pre_check_credentials;
             return $res unless $res == MT::Auth::NEW_LOGIN();
 
-            return MT->app->run_callbacks('mfa_verify_token')
+            my $verified = $app->run_callbacks('mfa_verify_token');
+            $app->request('mfa_verified', $verified);
+
+            $verified
                 ? $res
                 : MT::Auth::INVALID_PASSWORD();
         };
     }
+
+    install_modifier 'MT::App', 'around', 'login', sub {
+        my $orig = shift;
+        my $self = shift;
+
+        my @res = $self->$orig(@_);
+
+        return @res unless $self->isa('MT::App::CMS');
+
+        if ($res[0] && !$self->session('mfa_verified')) {
+            if ($self->request('mfa_verified')) {
+                $self->session('mfa_verified', 1);
+                $self->session->save;
+            } else {
+                # If signed in with another app class, sign in again, because the MFA token has not been verified.
+                return;
+            }
+        }
+
+        return @res;
+    };
 }
 
 sub reset_settings {

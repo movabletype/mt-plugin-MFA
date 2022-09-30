@@ -16,7 +16,7 @@ l10n_lexicon:
     Failed to reset MFA settings of selected user(s).: "選択したユーザーの多要素認証の設定のリセットに失敗しました。"
 
 callbacks:
-  init_app: $MFA::MT::Plugin::MFA::init_app
+  MT::App::CMS::init_app: $MFA::MT::Plugin::MFA::init_app
   MT::App::CMS::template_param.login: $MFA::MT::Plugin::MFA::template_param_login
   MT::App::CMS::template_param.new_password: $MFA::MT::Plugin::MFA::template_param_login
   MT::App::CMS::template_param.author_list_header: $MFA::MT::Plugin::MFA::template_param_author_list_header
