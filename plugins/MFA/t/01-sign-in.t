@@ -27,7 +27,7 @@ id: MFA-Test
 schema_version: 0.01
 object_types:
   author:
-    mfa_test_enabled: boolean meta
+    mfa_test_enabled: integer meta
 
 callbacks:
   mfa_render_form: |
