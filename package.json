@@ -1,7 +1,7 @@
 {
   "name": "mt-plugin-MFA",
   "version": "1.0.0",
-  "description": "This is a plugin for the Movable Type. This plugin enables you to use Movable Type Block Editor.",
+  "description": "This is a plugin for the Movable Type. This plugin provides multi factor authentication feature for the Movable Type.",
   "main": "",
   "scripts": {
     "build": "webpack --mode=production",
