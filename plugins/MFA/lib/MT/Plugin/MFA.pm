@@ -71,6 +71,7 @@ sub login_form {
 
     my $param = {
         templates => [],
+        scripts   => [],
     };
 
     $app->run_callbacks('mfa_render_form', $app, $param);
@@ -80,12 +81,15 @@ sub login_form {
     }
 
     return $app->json_result({
-        html => join "\n",
-        map({ ref $_ ? MT->build_page_in_mem($_) : $_ } (
-                $app->load_tmpl('login_form_header.tmpl'),
-                @{ $param->{templates} },
-                $app->load_tmpl('login_form_footer.tmpl'),
-        )),
+        html => join(
+            "\n",
+            map({ ref $_ ? MT->build_page_in_mem($_) : $_ } (
+                    $app->load_tmpl('login_form_header.tmpl'),
+                    @{ $param->{templates} },
+                    $app->load_tmpl('login_form_footer.tmpl'),
+            ))
+        ),
+        scripts => $param->{scripts},
     });
 }
 
