@@ -6,6 +6,7 @@ const config = {
   mode: "development",
   entry: {
     "login.min": ["./mt-static/plugins/MFA/src/login.ts"],
+    "edit_author.min": ["./mt-static/plugins/MFA/src/edit_author.ts"],
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],

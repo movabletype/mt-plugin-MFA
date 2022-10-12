@@ -29,14 +29,12 @@ sub template_param_login {
 
 sub template_param_author_list_header {
     my ($cb, $app, $param, $tmpl) = @_;
+    $param->{plugin_mfa_version} = _plugin()->version;
     _insert_after_by_name($tmpl, 'system_msg', 'author_list_header.tmpl');
 }
 
 sub template_param_edit_author {
     my ($cb, $app, $param, $tmpl) = @_;
-
-    $param->{mfa_page_actions} = [];
-    $app->run_callbacks('mfa_page_actions', $app, $param->{mfa_page_actions});
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
 }
 
@@ -172,6 +170,19 @@ sub reset_settings {
         if $app->param('is_power_edit');
 
     $app->call_return;
+}
+
+sub page_actions {
+    my ($app) = @_;
+
+    my $param = {
+        mfa_page_actions => [],
+    };
+    $app->run_callbacks('mfa_page_actions', $app, $param->{mfa_page_actions});
+
+    return $app->json_result({
+        page_actions => $param->{mfa_page_actions},
+    });
 }
 
 1;
