@@ -29,14 +29,12 @@ sub template_param_login {
 
 sub template_param_author_list_header {
     my ($cb, $app, $param, $tmpl) = @_;
+    $param->{plugin_mfa_version} = _plugin()->version;
     _insert_after_by_name($tmpl, 'system_msg', 'author_list_header.tmpl');
 }
 
 sub template_param_edit_author {
     my ($cb, $app, $param, $tmpl) = @_;
-
-    $param->{mfa_page_actions} = [];
-    $app->run_callbacks('mfa_page_actions', $app, $param->{mfa_page_actions});
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
 }
 
@@ -73,6 +71,7 @@ sub login_form {
 
     my $param = {
         templates => [],
+        scripts   => [],
     };
 
     $app->run_callbacks('mfa_render_form', $app, $param);
@@ -82,12 +81,15 @@ sub login_form {
     }
 
     return $app->json_result({
-        html => join "\n",
-        map({ ref $_ ? MT->build_page_in_mem($_) : $_ } (
-                $app->load_tmpl('login_form_header.tmpl'),
-                @{ $param->{templates} },
-                $app->load_tmpl('login_form_footer.tmpl'),
-        )),
+        html => join(
+            "\n",
+            map({ ref $_ ? MT->build_page_in_mem($_) : $_ } (
+                    $app->load_tmpl('login_form_header.tmpl'),
+                    @{ $param->{templates} },
+                    $app->load_tmpl('login_form_footer.tmpl'),
+            ))
+        ),
+        scripts => $param->{scripts},
     });
 }
 
@@ -172,6 +174,19 @@ sub reset_settings {
         if $app->param('is_power_edit');
 
     $app->call_return;
+}
+
+sub page_actions {
+    my ($app) = @_;
+
+    my $param = {
+        mfa_page_actions => [],
+    };
+    $app->run_callbacks('mfa_page_actions', $app, $param->{mfa_page_actions});
+
+    return $app->json_result({
+        page_actions => $param->{mfa_page_actions},
+    });
 }
 
 1;

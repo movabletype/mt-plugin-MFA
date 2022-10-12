@@ -16,7 +16,13 @@ function renderMFAForm() {
     data,
     dataType: "json",
   }).then(
-    ({ error, result }: { error?: string; result?: { html?: string } }) => {
+    ({
+      error,
+      result,
+    }: {
+      error?: string;
+      result?: { html: string; scripts: string[] };
+    }) => {
       if (error) {
         document.querySelectorAll(".alert").forEach((el) => el.remove());
         form.reset();
@@ -36,9 +42,9 @@ function renderMFAForm() {
         return;
       }
 
-      const html = result?.html;
+      const { html, scripts } = result || { html: "", scripts: [] };
 
-      if (!html) {
+      if (!html && scripts.length === 0) {
         // has not configured MFA.
         form.submit();
         return;
@@ -70,6 +76,17 @@ function renderMFAForm() {
         ].join(",")
       );
       placeholder?.parentElement?.insertBefore(wrap, placeholder.nextSibling);
+
+      scripts.forEach((src) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.type = "module";
+        script.src = src;
+        document.body.appendChild(script);
+      });
     }
   );
 }

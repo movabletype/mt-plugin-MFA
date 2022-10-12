@@ -42,17 +42,18 @@ $test_env->prepare_fixture('db');
 my $user = MT::Author->load(1);
 my $app  = MT::Test::App->new('MT::App::CMS');
 
-subtest '__mode=view&_type=author' => sub {
+subtest '__mode=mfa_page_actions' => sub {
     $app->login($user);
+
+    local $ENV{HTTP_X_REQUESTED_WITH} = 'XMLHttpRequest';
     $app->get_ok({
-        __mode => 'view',
-        _type  => 'author',
-        id     => $user->id,
+        __mode => 'mfa_page_actions',
     });
-    my $anchor = $app->wq_find('#mfa_settings a')->first;
-    ok $anchor, 'page_action is displayed';
-    like $anchor->attr('href'), qr/\?__mode=mfa_test_dialog&id=@{[$user->id]}/;
-    like $anchor->text, qr/MFA-Test/;
+    is_deeply $app->json->{result}{page_actions}, [{
+            label => 'MFA-Test',
+            mode  => 'mfa_test_dialog',
+        },
+    ];
 };
 
 done_testing();

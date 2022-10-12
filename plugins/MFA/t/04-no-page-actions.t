@@ -28,7 +28,6 @@ callbacks:
 YAML
 }
 
-
 use MT::Test;
 use MT::Test::App;
 
@@ -37,15 +36,13 @@ $test_env->prepare_fixture('db');
 my $user = MT::Author->load(1);
 my $app  = MT::Test::App->new('MT::App::CMS');
 
-subtest '__mode=view&_type=author' => sub {
+subtest '__mode=mfa_page_actions' => sub {
     $app->login($user);
-    $app->get_ok({
-        __mode => 'view',
-        _type  => 'author',
-        id     => $user->id,
-    });
-    my $settings = $app->wq_find('#mfa_settings');
-    is $settings->size, 0, '#mfa_settings should not be displayed if there is no page_actions';
-};
 
+    local $ENV{HTTP_X_REQUESTED_WITH} = 'XMLHttpRequest';
+    $app->get_ok({
+        __mode => 'mfa_page_actions',
+    });
+    is_deeply $app->json->{result}{page_actions}, [];
+};
 done_testing();
