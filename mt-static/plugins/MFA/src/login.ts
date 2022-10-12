@@ -76,6 +76,10 @@ function renderMFAForm() {
         ].join(",")
       );
       placeholder?.parentElement?.insertBefore(wrap, placeholder.nextSibling);
+      const firstInputElement = wrap.querySelector("input");
+      if (firstInputElement) {
+        firstInputElement.focus();
+      }
 
       scripts.forEach((src) => {
         if (document.querySelector(`script[src="${src}"]`)) {
