@@ -21,7 +21,7 @@ function renderMFAForm() {
       result,
     }: {
       error?: string;
-      result?: { html: string; scripts: string[] };
+      result?: { html?: string; scripts?: string[] };
     }) => {
       if (error) {
         document.querySelectorAll(".alert").forEach((el) => el.remove());
@@ -42,9 +42,9 @@ function renderMFAForm() {
         return;
       }
 
-      const { html, scripts } = result || { html: "", scripts: [] };
+      const { html, scripts } = result || {};
 
-      if (!html && scripts.length === 0) {
+      if (!html && (!scripts || scripts.length === 0)) {
         // has not configured MFA.
         form.submit();
         return;
