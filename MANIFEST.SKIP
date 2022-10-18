@@ -19,7 +19,6 @@
 # Build tools
 Gruntfile
 package.json
-^tools/
 docker-compose.yml
 Dockerfile
 package-lock.json
