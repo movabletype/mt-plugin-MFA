@@ -22,7 +22,7 @@ Should look like this when installed:
 
 ## Requirements
 
-* Movable Type 6 or Movable Type 7
+* Movable Type 7
 * At least one of the MFA provider plugin.
     * [MFA-Email](https://github.com/usualoma/mt-plugin-MFA-Email/)
     * [MFA-TOTP](https://github.com/movabletype/mt-plugin-MFA-TOTP/)
