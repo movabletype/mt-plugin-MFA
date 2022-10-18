@@ -19,6 +19,12 @@
 # Build tools
 Gruntfile
 package.json
+^tools/
+docker-compose.yml
+Dockerfile
+package-lock.json
+tsconfig.json
+webpack.config.js
 
 # npm working directory
 ^node_modules/
@@ -26,3 +32,13 @@ package.json
 # packages
 \.zip$
 \.tar\.gz$
+
+# test
+plugins/MFA/t/
+plugins/MFA/xt/
+^t/
+^cypress.json
+^cypress/
+
+# source files
+mt-static/plugins/MFA/src/
