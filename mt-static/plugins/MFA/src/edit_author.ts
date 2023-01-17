@@ -9,6 +9,7 @@ function updatePageActions() {
     url: window.CMSScriptURI,
     data: {
       __mode: "mfa_page_actions",
+      id: pageActionsContainer.dataset.authorId,
     },
   }).then(
     ({
