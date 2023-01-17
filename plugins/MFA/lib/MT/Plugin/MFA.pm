@@ -179,6 +179,15 @@ sub reset_settings {
 sub page_actions {
     my ($app) = @_;
 
+    $app->validate_param({
+        id => [qw/ID/],
+    }) or return;
+
+    # TODO: Allow super users to also perform actions on other users.
+    if ($app->param('id') != $app->user->id) {
+        return $app->json_result({ page_actions => [] });
+    }
+
     my $param = {
         mfa_page_actions => [],
     };
