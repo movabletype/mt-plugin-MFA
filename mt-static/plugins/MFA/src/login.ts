@@ -59,7 +59,7 @@ function renderMFAForm() {
         .forEach((el) => el.classList.add("d-none"));
 
       const wrap = document.createElement("div");
-      wrap.innerHTML = html;
+      wrap.innerHTML = html || "";
       wrap.querySelector("#mfa-cancel")?.addEventListener("click", () => {
         wrap.remove();
         rendered = false;
@@ -74,7 +74,7 @@ function renderMFAForm() {
         firstInputElement.focus();
       }
 
-      scripts.forEach((src) => {
+      (scripts || []).forEach((src) => {
         if (document.querySelector(`script[src="${src}"]`)) {
           return;
         }
