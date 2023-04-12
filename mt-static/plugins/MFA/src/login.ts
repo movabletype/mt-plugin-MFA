@@ -52,16 +52,14 @@ function renderMFAForm() {
 
       rendered = true;
 
-      const fieldSelector = [
-        "#username-field, #password-field, #remember-me, #remember-me + div", // login
-        "#page-title, #name-field, #name-field + div", // new_password
-      ].join(",");
+      const fieldSelector =
+        "#username-field, #password-field, #remember-me, #remember-me + div";
       document
         .querySelectorAll(fieldSelector)
         .forEach((el) => el.classList.add("d-none"));
 
       const wrap = document.createElement("div");
-      wrap.innerHTML = html;
+      wrap.innerHTML = html || "";
       wrap.querySelector("#mfa-cancel")?.addEventListener("click", () => {
         wrap.remove();
         rendered = false;
@@ -69,19 +67,14 @@ function renderMFAForm() {
           .querySelectorAll(fieldSelector)
           .forEach((el) => el.classList.remove("d-none"));
       });
-      const placeholder = document.querySelector(
-        [
-          "#password-field", // login
-          "#name-field", // new_password
-        ].join(",")
-      );
+      const placeholder = document.querySelector("#password-field");
       placeholder?.parentElement?.insertBefore(wrap, placeholder.nextSibling);
       const firstInputElement = wrap.querySelector("input");
       if (firstInputElement) {
         firstInputElement.focus();
       }
 
-      scripts.forEach((src) => {
+      (scripts || []).forEach((src) => {
         if (document.querySelector(`script[src="${src}"]`)) {
           return;
         }

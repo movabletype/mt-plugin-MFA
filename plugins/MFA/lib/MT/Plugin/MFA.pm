@@ -25,6 +25,7 @@ sub template_param_login {
     my ($cb, $app, $param, $tmpl) = @_;
     $param->{plugin_mfa_version} = _plugin()->version;
     _insert_after_by_name($tmpl, 'layout/chromeless.tmpl', 'login_footer.tmpl');
+    _insert_after_by_name($tmpl, 'logged_out', 'login_status_message.tmpl');
 }
 
 sub template_param_author_list_header {
@@ -36,6 +37,11 @@ sub template_param_author_list_header {
 sub template_param_edit_author {
     my ($cb, $app, $param, $tmpl) = @_;
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
+}
+
+sub template_source_new_password {
+    my ($cb, $app, $tmpl) = @_;
+    $$tmpl =~ s{\bvalue="new_pw"}{value="mfa_new_password"};
 }
 
 our $pre_check_credentials = 0;
@@ -93,6 +99,22 @@ sub login_form {
     });
 }
 
+our $disable_login = 0;
+sub new_password {
+    my $app = shift;
+    require MT::CMS::Tools;
+    local $disable_login = 1;
+    my $res = MT::CMS::Tools::new_password($app);
+
+    if (ref $app eq 'MT::App::CMS' && $app->{redirect}) {
+        # password has been updated
+        $app->redirect($app->mt_uri(args => { mfa_password_updated => 1 }));
+        return;
+    }
+
+    return $res;
+}
+
 my $app_initialized = 0;
 sub init_app {
     return if $app_initialized;
@@ -129,6 +151,8 @@ sub init_app {
     install_modifier 'MT::App', 'around', 'login', sub {
         my $orig = shift;
         my $self = shift;
+
+        return if $disable_login;
 
         my @res = $self->$orig(@_);
 
@@ -184,7 +208,8 @@ sub page_actions {
     }) or return;
 
     # TODO: Allow super users to also perform actions on other users.
-    if ($app->param('id') != $app->user->id) {
+    my $page_user_id = $app->param('id');
+    if ($page_user_id && $page_user_id != $app->user->id) {
         return $app->json_result({ page_actions => [] });
     }
 

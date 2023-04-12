@@ -87,6 +87,21 @@ sub insert_failedlogin {
     $failedlogin->save or die $failedlogin->errstr;
 }
 
+subtest 'sign in page' => sub {
+    my $message_re = qr/Your password has been updated. Please sign in again./;
+    subtest 'with mfa_password_updated=1' => sub {
+        $app->get_ok({
+            mfa_password_updated => 1,
+        });
+        $app->content_like($message_re);
+    };
+
+    subtest 'without parameters' => sub {
+        $app->get_ok();
+        $app->content_unlike($message_re);
+    };
+};
+
 subtest 'sign in' => sub {
     subtest 'Should not affect to "sign in" function for users who have not configured MFA' => sub {
         subtest 'valid password' => sub {
