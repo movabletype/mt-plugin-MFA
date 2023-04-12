@@ -208,7 +208,8 @@ sub page_actions {
     }) or return;
 
     # TODO: Allow super users to also perform actions on other users.
-    if ($app->param('id') != $app->user->id) {
+    my $page_user_id = $app->param('id');
+    if ($page_user_id && $page_user_id != $app->user->id) {
         return $app->json_result({ page_actions => [] });
     }
 
