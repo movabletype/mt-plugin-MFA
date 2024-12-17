@@ -58,14 +58,8 @@ workflows:
   test-and-build:
     jobs:
       - test-perl:
-          name: test-perl with jessie
-          docker-image: movabletype/test:jessie
-      - test-perl:
           name: test-perl with buster
           docker-image: movabletype/test:buster
-      - test-perl:
-          name: test-perl with fedora
-          docker-image: movabletype/test:fedora
       - test-perl:
           name: test-perl with bullseye
           docker-image: movabletype/test:bullseye
