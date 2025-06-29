@@ -1,0 +1,6 @@
+#primaryNavigation,
+.mt-primaryNavigation__toggle_icon_wrapper,
+.mt-systemHeaderActions > *:not(:last-child),
+.mt-systemHeaderActions #menu-profile {
+  display: none;
+}

@@ -1,0 +1,16 @@
+<mt:setvar name="page_title" value="<__trans phrase="MFA Settings">">
+
+<mt:setvarblock name="system_msg">
+<mtapp:statusmsg class="info">
+  <__trans phrase="MFA setup is enforced by system policy. You must configure it to continue.<br>Please configure the settings from the menu on the right.">
+</mtapp:statusmsg>
+</mt:setvarblock>
+
+<mt:setvarblock name="related_content"></mt:setvarblock>
+
+<mt:setvarblock name="css_include" append="1">
+<link rel="stylesheet" href="<$mt:var name="static_uri"$>plugins/MFA/css/mfa-require-settings.css?v=<mt:Var name="plugin_mfa_version" />">
+</mt:setvarblock>
+
+<mt:include name="layout/default.tmpl">
+<mt:var name="layout">

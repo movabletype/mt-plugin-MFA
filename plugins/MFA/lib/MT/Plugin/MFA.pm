@@ -6,8 +6,22 @@ use utf8;
 
 use Class::Method::Modifiers qw(install_modifier);
 
+our $STATUS_KEY                       = 'mfa_verified';
+our $STATUS_VERIFIED_WITHOUT_SETTINGS = 1;
+our $STATUS_VERIFIED_WITH_SETTINGS    = 2;
+our $STATUS_REQUIRES_SETTINGS         = 3;
+
 sub _plugin {
     MT->component(__PACKAGE__ =~ m/::([^:]+)\z/);
+}
+
+sub _insert_after {
+    my ($tmpl, $before, $template_name) = @_;
+
+    foreach my $t (@{ _plugin()->load_tmpl($template_name)->tokens }) {
+        $tmpl->insertAfter($t, $before);
+        $before = $t;
+    }
 }
 
 sub _insert_after_by_name {
@@ -15,17 +29,27 @@ sub _insert_after_by_name {
 
     my $before = pop @{ $tmpl->getElementsByName($name) || [] }
         or return;
-    foreach my $t (@{ _plugin()->load_tmpl($template_name)->tokens }) {
-        $tmpl->insertAfter($t, $before);
-        $before = $t;
-    }
+    _insert_after($tmpl, $before, $template_name);
+}
+
+sub _insert_after_by_id {
+    my ($tmpl, $id, $template_name) = @_;
+
+    my $before = $tmpl->getElementById($id)
+        or return;
+    _insert_after($tmpl, $before, $template_name);
+}
+
+our $cached_mfa_enforcement;
+sub mfa_enforcement {
+    return $cached_mfa_enforcement //= _plugin()->get_config_value('mfa_enforcement');
 }
 
 sub template_param_login {
     my ($cb, $app, $param, $tmpl) = @_;
     $param->{plugin_mfa_version} = _plugin()->version;
     _insert_after_by_name($tmpl, 'layout/chromeless.tmpl', 'login_footer.tmpl');
-    _insert_after_by_name($tmpl, 'logged_out', 'login_status_message.tmpl');
+    _insert_after_by_name($tmpl, 'logged_out',             'login_status_message.tmpl');
 }
 
 sub template_param_author_list_header {
@@ -37,6 +61,12 @@ sub template_param_author_list_header {
 sub template_param_edit_author {
     my ($cb, $app, $param, $tmpl) = @_;
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
+}
+
+sub template_param_cfg_system_users {
+    my ($cb, $app, $param, $tmpl) = @_;
+    $param->{mfa_enforcement} = mfa_enforcement();
+    _insert_after_by_id($tmpl, 'password-validation', 'cfg_system_users.tmpl');
 }
 
 sub template_source_new_password {
@@ -99,6 +129,16 @@ sub login_form {
     });
 }
 
+sub get_configured_components {
+    my $app   = shift;
+    my $param = {
+        user       => $app->user,
+        components => [],
+    };
+    $app->run_callbacks('mfa_list_configured_settings', $app, $param);
+    return $param->{components};
+}
+
 our $disable_login = 0;
 sub new_password {
     my $app = shift;
@@ -140,7 +180,7 @@ sub init_app {
             return $res unless $res == MT::Auth::NEW_LOGIN();
 
             my $verified = $app->run_callbacks('mfa_verify_token');
-            $app->request('mfa_verified', $verified);
+            $app->request('mfa_verify_token_result', $verified);
 
             $verified
                 ? $res
@@ -158,18 +198,73 @@ sub init_app {
 
         return @res unless $self->isa('MT::App::CMS');
 
-        if ($res[0] && !$self->session('mfa_verified')) {
-            if ($self->request('mfa_verified')) {
-                $self->session('mfa_verified', 1);
-                $self->session->save;
+        if (
+            $res[0]
+            && (!$self->session($STATUS_KEY)
+                || (mfa_enforcement() && $self->session($STATUS_KEY) == $STATUS_VERIFIED_WITHOUT_SETTINGS)))
+        {
+            if ($self->request('mfa_verify_token_result') || $self->session($STATUS_KEY)) {
+                my $components = get_configured_components($self);
+                my $status =
+                      @$components      ? $STATUS_VERIFIED_WITH_SETTINGS
+                    : mfa_enforcement() ? $STATUS_REQUIRES_SETTINGS
+                    :                     $STATUS_VERIFIED_WITHOUT_SETTINGS;
+                $self->session($STATUS_KEY, $status);
             } else {
                 # If signed in with another app class, sign in again, because the MFA token has not been verified.
                 return;
             }
         }
 
+        if (($self->session($STATUS_KEY) || 0) == $STATUS_REQUIRES_SETTINGS) {
+            my %methods = map { $_ => 1 } map { ref $_ eq 'ARRAY' ? @$_ : $_ } @{ MT->registry('mfa', 'allowed_methods_for_requires_settings') || [] };
+            if (!$methods{ $self->mode }) {
+                my $method_info = $self->request('method_info') || {};
+                if ($self->param('xhr')
+                    or (($method_info->{app_mode} || '') eq 'JSON'))
+                {
+                    $self->json_error(
+                        _plugin()->translate('MFA setup is enforced by system policy. You must configure it before using this API.'),
+                        401
+                    );
+                } else {
+                    $self->redirect($self->mt_uri(mode => 'mfa_requires_settings'));
+                }
+                return;
+            }
+        }
+
         return @res;
     };
+}
+
+sub mfa_settings_updated {
+    my $app = MT->instance;
+
+    my $prev_status = $app->session($STATUS_KEY) || 0;
+    my $components  = get_configured_components($app);
+    if (@$components) {
+        $app->session($STATUS_KEY, $STATUS_VERIFIED_WITH_SETTINGS);
+    } elsif ($prev_status == $STATUS_VERIFIED_WITH_SETTINGS && !@$components) {
+        $app->session($STATUS_KEY, mfa_enforcement() ? $STATUS_REQUIRES_SETTINGS : $STATUS_VERIFIED_WITHOUT_SETTINGS);
+    }
+
+    1;
+}
+
+sub requires_settings {
+    my ($app) = @_;
+
+    if ($app->session($STATUS_KEY) != $STATUS_REQUIRES_SETTINGS) {
+        $app->redirect($app->mt_uri);
+        return;
+    }
+
+    $app->add_breadcrumb(_plugin()->translate('MFA Settings'));
+    $app->load_tmpl(
+        'mfa_requires_settings.tmpl', {
+            screen_id => "mfa-require-settings",
+        });
 }
 
 sub reset_settings {
@@ -221,6 +316,16 @@ sub page_actions {
     return $app->json_result({
         page_actions => $param->{mfa_page_actions},
     });
+}
+
+sub pre_save_config {
+    my $app = MT->instance;
+
+    return 1 unless $app->mode eq 'save_cfg_system_users';
+
+    _plugin()->set_config_value('mfa_enforcement', $app->param('mfa_enforcement') ? 1 : 0);
+
+    return 1;
 }
 
 1;
