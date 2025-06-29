@@ -60,6 +60,8 @@ sub template_param_author_list_header {
 
 sub template_param_edit_author {
     my ($cb, $app, $param, $tmpl) = @_;
+    $param->{plugin_mfa_version} = _plugin()->version;
+    $param->{mfa_status}         = $app->session($STATUS_KEY) || 0;
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
 }
 
@@ -315,6 +317,7 @@ sub page_actions {
 
     return $app->json_result({
         page_actions => $param->{mfa_page_actions},
+        mfa_status   => ($app->session($STATUS_KEY) || 0) + 0,
     });
 }
 
