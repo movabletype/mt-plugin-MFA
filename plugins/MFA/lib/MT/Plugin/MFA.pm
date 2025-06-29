@@ -288,6 +288,11 @@ sub reset_settings {
         my $user = $class->load($id);
         next unless $user;
         $status &&= $app->run_callbacks('mfa_reset_settings', $app, { user => $user });
+
+        MT->model('session')->remove({
+            kind => 'US',
+            name => $user->id,
+        });
     }
 
     $app->add_return_arg(saved_status  => $status ? 'mfa_reset' : 'mfa_reset_failed');
