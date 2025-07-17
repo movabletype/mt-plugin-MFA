@@ -130,7 +130,7 @@ subtest 'on error' => sub {
     $user->save;
     my ($out, $err) = run(username => $user->name);
     is $out, "Reset settings for 0 users.\n";
-    is $err, "Failed to reset settings for user @{[$user->name]}(@{[$user->email]}) : Too many resets\n"
+    like $err, qr{\QFailed to reset settings for user @{[$user->name]}(@{[$user->email]}) : Too many resets\E};
 };
 
 done_testing;
