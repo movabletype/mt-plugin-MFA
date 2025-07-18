@@ -1,6 +1,6 @@
 id: MFA
 name: MFA
-version: 1.0.5
+version: 1.1.0
 
 description: <__trans phrase="This plugin provides multi factor authentication feature for the Movable Type.">
 author_link: http://www.movabletype.org/
