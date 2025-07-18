@@ -265,7 +265,7 @@ sub requires_settings {
     $app->add_breadcrumb(_plugin()->translate('MFA Settings'));
     $app->load_tmpl(
         'mfa_requires_settings.tmpl', {
-            screen_id => "mfa-require-settings",
+            screen_id => "mfa-requires-settings",
         });
 }
 
