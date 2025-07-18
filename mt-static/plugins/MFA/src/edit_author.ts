@@ -4,6 +4,10 @@ const pageActionsContainer = document.querySelector(
   "#mfa-page-actions"
 ) as HTMLDivElement;
 
+const mfaStatus = parseInt(document.querySelector<HTMLElement>(
+  "[data-mt-mfa-status]"
+)?.dataset?.mtMfaStatus ?? "0");
+
 function updatePageActions() {
   $.ajax({
     url: window.CMSScriptURI,
@@ -13,12 +17,23 @@ function updatePageActions() {
     },
   }).then(
     ({
-      result: { page_actions: pageActions },
+      result: {
+        page_actions: pageActions,
+        mfa_status,
+      },
     }: {
-      result: { page_actions: { label: string; mode: string }[] };
+      result: {
+        page_actions: { label: string; mode: string }[],
+        mfa_status: number,
+      };
     }) => {
       if (pageActions.length === 0) {
         pageActionsContainer.classList.add("d-none");
+        return;
+      }
+
+      if (mfaStatus !== mfa_status) {
+        window.location.reload();
         return;
       }
 

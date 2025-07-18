@@ -1,0 +1,13 @@
+<mtapp:settinggroup id="multi-factor-authentication">
+  <legend class="h3"><__trans phrase="__MFA_CONFIG_LEGEND"></legend>
+  <mtapp:setting
+     id="multi-factor-authentication-enforcement"
+     label="<__trans phrase="Enforcement">"
+     hint="<__trans phrase="If enabled, users who have not completed MFA setup will not be able to use the CMS.">"
+     show_hint="1">
+    <div class="form-check">
+      <input type="checkbox" name="mfa_enforcement" id="mfa_enforcement" class="form-check-input" value="1" <mt:if name="mfa_enforcement" eq="1">checked="checked"</mt:if> />
+      <label class="form-check-label" for="mfa_enforcement"><__trans phrase="Enforce MFA setup for users"></label>
+    </div>
+  </mtapp:setting>
+</mtapp:settinggroup>

@@ -44,27 +44,48 @@ my $user  = MT::Author->load(1);
 my $guest = MT::Test::Permission->make_author;
 my $app   = MT::Test::App->new('MT::App::CMS');
 
+ok $MT::Plugin::MFA::STATUS_KEY;
+
 subtest '__mode=mfa_page_actions' => sub {
     $app->login($user);
+
+    my $session = MT::App::make_session($user);
+    $session->set($MT::Plugin::MFA::STATUS_KEY, 1);
+    $session->save or die "Failed to save session: $!";
+    $app->{session} = $session->id;
+
+    subtest 'edit-author screen' => sub {
+        $app->get_ok({
+            __mode => 'view',
+            _type  => 'author',
+            id     => $user->id,
+        });
+
+        is $app->wq_find('script[data-mt-mfa-status="1"]')->size, 1;
+        is $app->wq_find('#mfa-page-actions')->size, 1;
+    };
 
     subtest 'own user ID' => sub {
         local $ENV{HTTP_X_REQUESTED_WITH} = 'XMLHttpRequest';
         $app->get_ok({
             __mode => 'mfa_page_actions',
-            id => $user->id,
+            id     => $user->id,
         });
+
         is_deeply $app->json->{result}{page_actions}, [{
                 label => 'MFA-Test',
                 mode  => 'mfa_test_dialog',
             },
         ];
+
+        is $app->json->{result}{mfa_status}, 1;
     };
 
     subtest 'guest user ID' => sub {
         local $ENV{HTTP_X_REQUESTED_WITH} = 'XMLHttpRequest';
         $app->get_ok({
             __mode => 'mfa_page_actions',
-            id => $guest->id,
+            id     => $guest->id,
         });
         is_deeply $app->json->{result}{page_actions}, [];
     };
@@ -73,7 +94,7 @@ subtest '__mode=mfa_page_actions' => sub {
         local $ENV{HTTP_X_REQUESTED_WITH} = 'XMLHttpRequest';
         $app->get_ok({
             __mode => 'mfa_page_actions',
-            id => 'invalid',
+            id     => 'invalid',
         });
         ok $app->json->{error};
     };

@@ -56,6 +56,14 @@ subtest '__mode=mfa_reset' => sub {
     subtest 'select users' => sub {
         my @selected_users = map { MT::Test::Permission->make_author } 0..2;
         my @not_selected_users = map { MT::Test::Permission->make_author } 0..2;
+
+        my @selected_users_sessions = map {
+            MT::App::make_session($_)
+        } @selected_users;
+        my @not_selected_users_sessions = map {
+            MT::App::make_session($_)
+        } @not_selected_users;
+
         $app->post_ok({
             __mode      => 'mfa_reset',
                         _type       => 'author',
@@ -66,6 +74,14 @@ subtest '__mode=mfa_reset' => sub {
         is($_->mfa_test_reset_count, 1) for @selected_users;
         ok(!$_->mfa_test_reset_count) for @not_selected_users;
         like $app->last_location, qr/\?__mode=list&blog_id=0&_type=author&saved_status=mfa_reset/, "saved_status is mfa_reset";
+
+        my $session_model = MT->model('session');
+        for my $session (@selected_users_sessions) {
+            ok !$session_model->load($session->id);
+        }
+        for my $session (@not_selected_users_sessions) {
+            ok $session_model->load($session->id);
+        }
     };
 
     subtest 'all users' => sub {
