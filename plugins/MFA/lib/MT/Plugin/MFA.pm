@@ -132,9 +132,10 @@ sub login_form {
 }
 
 sub get_configured_components {
-    my $app   = shift;
+    my ($app, $user) = @_;
+    $user ||= $app->user;
     my $param = {
-        user       => $app->user,
+        user       => $user,
         components => [],
     };
     $app->run_callbacks('mfa_list_configured_settings', $app, $param);
@@ -237,6 +238,26 @@ sub init_app {
         }
 
         return @res;
+    };
+}
+
+my $app_upgrader_initialized = 0;
+sub init_app_upgrader {
+    return if $app_upgrader_initialized;
+    $app_upgrader_initialized = 1;
+
+    install_modifier 'MT::App', 'after', 'start_session', sub {
+        my ($self, $user) = @_;
+
+        return unless $user;    # support only $app->start_session($user) pattern.
+
+        my $components = get_configured_components($self, $user);
+
+        if (!@$components) {
+            $self->session($STATUS_KEY, $STATUS_VERIFIED_WITHOUT_SETTINGS);
+        } else {
+            # If the user has already set up MFA, start over with the sign-in form
+        }
     };
 }
 
