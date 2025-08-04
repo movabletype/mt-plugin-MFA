@@ -1,0 +1,15 @@
+<mt:setvarblock name="related_content" append="1">
+<mt:unless name="new_object">
+<div id="mfa-page-actions" class="d-none" data-author-id="<mt:Var name="id" encode_html="1"/>">
+<mtapp:widget
+  id="mfa_settings"
+  label="<__trans_section component="MFA"><__trans phrase="MFA"></__trans_section>">
+  <ul class="list-unstyled"></ul>
+</mtapp:widget>
+</div>
+</mt:unless>
+</mt:setvarblock>
+
+<mt:setvarblock name="js_include" append="1">
+<script src="<$mt:var name="static_uri"$>plugins/MFA/dist/edit_author.min.js?v=<mt:Var name="plugin_mfa_version" />" data-mt-mfa-status="<mt:Var name="mfa_status" />" type="module"></script>
+</mt:setvarblock>

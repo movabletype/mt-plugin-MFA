@@ -1,0 +1,17 @@
+<mt:setvarblock name="system_msg" append="1">
+<__trans_section component="MFA">
+    <mt:if name="request.saved_status" eq="mfa_reset">
+        <mtapp:statusmsg
+            id="saved-status-mfa-reset"
+            class="success">
+            <__trans phrase="You have successfully Reset the MFA settings of selected user(s).">
+        </mtapp:statusmsg>
+    <mt:elseif eq="mfa_reset_failed">
+        <mtapp:statusmsg
+            id="saved-status-mfa-reset"
+            class="error">
+            <__trans phrase="Failed to reset MFA settings of selected user(s).">
+        </mtapp:statusmsg>
+    </mt:if>
+</__trans_section>
+</mt:setvarblock>
