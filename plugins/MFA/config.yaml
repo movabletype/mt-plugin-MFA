@@ -29,7 +29,7 @@ l10n_lexicon:
     Enforcement: "必須化"
     "Enforce MFA setup for users": "多要素認証の設定を必須にする"
     "If enabled, users who have not completed MFA setup will not be able to use the CMS.": "有効にすると、多要素認証の設定が完了していないユーザーはCMSの操作をすることができなくなります。"
-    "MFA setup is enforced by system policy. You must configure it to continue.<br>Please configure the settings from the menu on the right.": "システム設定により多要素認証の設定が必須になっています。<br />システムを利用するためには、最初に右側のメニューから設定を行ってください。"
+    "MFA setup is enforced by system policy. You must configure it to continue.<br>Please configure the settings from the menu.": "システム設定により多要素認証の設定が必須になっています。<br />システムを利用するためには、最初にメニューから設定を行ってください。"
     "MFA setup is enforced by system policy. You must configure it before using this API.": "システム設定により多要素認証の設定が必須になっています。このAPIを利用するためには、設定を行う必要があります。"
   en_us:
     __MFA_CONFIG_LEGEND: "Multi-Factor Authentication"

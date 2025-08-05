@@ -1,0 +1,18 @@
+/* PC */
+#primaryNavigation,
+.mt-primaryNavigation__toggle_icon_wrapper,
+.mt-systemHeaderActions > *:not(:last-child),
+.mt-systemHeaderActions #menu-profile {
+  display: none;
+}
+
+/* Mobile */
+#mobilePrimaryMenu__dropdownMenuButton,
+.mt-mobileGlobalMenu__dropdownMenu
+  ul
+  li:not(.mt-mobileGlobalMenu__menu--username, #menu-sign_out) {
+  display: none !important;
+}
+.mt-breadcrumb {
+  margin-left: 0;
+}

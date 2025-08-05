@@ -1,6 +1,17 @@
+/* PC */
 #primaryNavigation,
-.mt-primaryNavigation__toggle_icon_wrapper,
-.mt-systemHeaderActions > *:not(:last-child),
-.mt-systemHeaderActions #menu-profile {
-  display: none;
+.mt-productHeader__name,
+.mt-primaryNavigation__siteMenu,
+#menu-search,
+#menu-profile,
+#menu-documentation {
+  display: none !important;
+}
+
+/* Mobile */
+#mobilePrimaryMenu__dropdownMenuButton,
+.mt-mobileGlobalMenu__dropdownMenu
+  ul
+  li:not(.mt-mobileGlobalMenu__menu--username, .mt-mobileGlobalMenu__menu--userAction) {
+  display: none !important;
 }
