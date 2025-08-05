@@ -54,6 +54,16 @@ subtest '__mode=mfa_page_actions' => sub {
     $session->save or die "Failed to save session: $!";
     $app->{session} = $session->id;
 
+    subtest 'new-author screen' => sub {
+        $app->get_ok({
+            __mode => 'view',
+            _type  => 'author',
+        });
+
+        ok !$app->wq_find('script[data-mt-mfa-status="1"]')->size, 'should not insert script tag on new author screen';
+        ok !$app->wq_find('#mfa-page-actions')->size, 'should not insert page actions on new author screen';
+    };
+
     subtest 'edit-author screen' => sub {
         $app->get_ok({
             __mode => 'view',
@@ -61,8 +71,8 @@ subtest '__mode=mfa_page_actions' => sub {
             id     => $user->id,
         });
 
-        is $app->wq_find('script[data-mt-mfa-status="1"]')->size, 1;
-        is $app->wq_find('#mfa-page-actions')->size, 1;
+        is $app->wq_find('script[data-mt-mfa-status="1"]')->size, 1, 'should insert script tag on edit author screen';
+        is $app->wq_find('#mfa-page-actions')->size, 1, 'should insert page actions on edit author screen';
     };
 
     subtest 'own user ID' => sub {
