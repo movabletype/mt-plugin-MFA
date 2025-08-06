@@ -60,6 +60,9 @@ sub template_param_author_list_header {
 
 sub template_param_edit_author {
     my ($cb, $app, $param, $tmpl) = @_;
+
+    return 1 if $param->{new_object};
+
     $param->{plugin_mfa_version} = _plugin()->version;
     $param->{mfa_status}         = $app->session($STATUS_KEY) || 0;
     _insert_after_by_name($tmpl, 'related_content', 'edit_author.tmpl');
