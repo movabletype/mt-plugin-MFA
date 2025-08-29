@@ -353,7 +353,7 @@ sub page_actions {
 sub pre_save_config {
     my $app = MT->instance;
 
-    return 1 unless $app->mode eq 'save_cfg_system_users';
+    return 1 unless $app->isa('MT::App::CMS') && $app->mode eq 'save_cfg_system_users';
 
     _plugin()->set_config_value('mfa_enforcement', $app->param('mfa_enforcement') ? 1 : 0);
 
