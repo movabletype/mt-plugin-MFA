@@ -66,4 +66,15 @@ subtest '__mode=save_cfg_system_users' => sub {
     };
 };
 
+subtest 'Runs on a simple MT instance' => sub {
+    subtest 'MT::Config::pre_save' => sub {
+        my $mt = MT->new;
+        MT->set_instance($mt);
+        my $config_model = $mt->model('config');
+        my $config = $config_model->load;
+        $config->save;
+        ok !$config_model->errstr;
+    };
+};
+
 done_testing();
