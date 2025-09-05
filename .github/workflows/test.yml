@@ -1,0 +1,45 @@
+name: Test
+on:
+  push:
+    branches:
+      - "**/*"
+    tags:
+      - "v*"
+      - "*@v*"
+
+jobs:
+  perl:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - { image: cloud7 }
+          - { image: buster }
+          - { image: bullseye }
+          - { image: fedora35 }
+          - { image: fedora37 }
+          - { image: fedora40 }
+          - { image: fedora41 }
+          - { image: fedora42 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: movabletype/movabletype
+          ref: develop
+          path: mt
+      - uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run tests
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/mt:/app \
+            -v ${{ github.workspace }}/plugins/MFA:/app/plugins/MFA \
+            -v ${{ github.workspace }}/tools/MFA:/app/tools/MFA \
+            -w /app \
+            ghcr.io/movabletype/movabletype/test:${{ matrix.config.image }} \
+          prove -j4 -PMySQLPool=MT::Test::Env -It/lib \
+            plugins/MFA/t
