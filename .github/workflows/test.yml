@@ -23,16 +23,16 @@ jobs:
           - { image: fedora44 }
           - { image: cloud7 }
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7.0.0
         with:
           persist-credentials: false
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@v7.0.0
         with:
           persist-credentials: false
           repository: movabletype/movabletype
           ref: develop
           path: mt
-      - uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+      - uses: docker/login-action@v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
