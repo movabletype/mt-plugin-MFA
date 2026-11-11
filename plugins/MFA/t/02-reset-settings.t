@@ -48,7 +48,10 @@ use MT::Test::App;
 $test_env->prepare_fixture('db');
 
 my $admin = MT::Author->load(1);
-my $app = MT::Test::App->new('MT::App::CMS');
+my $app   = MT::Test::App->new(
+    app_class     => 'MT::App::CMS',
+    _request_sent => 1,
+);
 
 subtest '__mode=mfa_reset' => sub {
     $app->login($admin);
